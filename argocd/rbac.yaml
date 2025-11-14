@@ -42,3 +42,29 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: argocd-repo-server-read-secret
+  namespace: openshift-gitops
+rules:
+- apiGroups: [""]d'.
+  resources: ["secrets"]
+  resourceNames: ["argocd-vault-plugin-credentials"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argocd-repo-server-read-secret-binding
+  namespace: openshift-gitops
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: argocd-repo-server-read-secret
+subjects:
+- kind: ServiceAccount
+  name: argocd-repo-server
+- kind: ServiceAccount
+  name: vault
