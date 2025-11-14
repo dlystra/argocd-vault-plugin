@@ -1,0 +1,15 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: vault-repo
+  namespace: openshift-gitops
+  labels:
+    argocd.argoproj.io/secret-type: repository
+  annotations:
+    managed-by: argocd.argoproj.io
+stringData:
+  name: vault
+  project: default
+  type: helm
+  url: https://helm.releases.hashicorp.com
+type: Opaque

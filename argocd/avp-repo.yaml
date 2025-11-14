@@ -1,0 +1,15 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: avp-repo
+  namespace: openshift-gitops
+  labels:
+    argocd.argoproj.io/secret-type: repository
+  annotations:
+    managed-by: argocd.argoproj.io
+stringData:
+  name: argocd-vault-plugin
+  project: default
+  type: git
+  url: https://github.com/dlystra/argocd-vault-plugin.git
+type: Opaque
