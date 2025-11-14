@@ -1,19 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: avp-demo
+  name: avp-demo-kustomize
   namespace: openshift-gitops
 spec:
-  destination:
-    namespace: openshift-gitops
-    server: 'https://kubernetes.default.svc'
   project: default
   source:
-    path: helm/templates
-    plugin:
-      name: argocd-vault-plugin
     repoURL: 'https://github.com/dlystra/argocd-vault-plugin.git'
     targetRevision: main
+    path: kustomize/overlays/demo
+    plugin:
+      name: argocd-vault-plugin-kustomize
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openshift-gitops
   syncPolicy:
     automated:
       enabled: true
