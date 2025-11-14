@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    targetRevision: 0.31.0
+    helm:
+      values: |
+        global:
+          openshift: true
+        server:
+          dev:
+            enabled: true
+          image:
+            repository: docker.io/hashicorp/vault
+        injector:
+          image:
+            repository: docker.io/hashicorp/vault-k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

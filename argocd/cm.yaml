@@ -1,0 +1,66 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: argocd-vault-plugins
+  namespace: openshift-gitops
+data:
+  helm-plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: argocd-vault-plugin-helm
+    spec:
+      init:
+        command: [sh, -c]
+        args: ["helm dependency build"]
+      generate:
+        command: ["bash", "-c"]
+        args: ['helm template "$ARGOCD_APP_NAME" -n "$ARGOCD_APP_NAMESPACE" $ARGOCD_ENV_HELM_ARGS . | argocd-vault-plugin generate -s openshift-policy:team-avp-credentials -']
+  kustomize-plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: argocd-vault-plugin-kustomize
+    spec:
+      generate:
+        command: ["sh", "-c"]
+        args: ["kustomize --enable-alpha-plugins --enable-helm build . | argocd-vault-plugin -s openshift-policy:team-avp-credentials generate -"]
+  vault-plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: argocd-vault-plugin
+    spec:
+      generate:
+        command: ["sh", "-c"]
+        args: ["argocd-vault-plugin -s openshift-policy:team-avp-credentials generate ./"]
+  kustomize-novault-plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: argocd-novault-plugin-kustomize
+    spec:
+      generate:
+        command: ["sh", "-c"]
+        args: ["kustomize --enable-alpha-plugins --enable-helm build ."]
+  helm-novault-plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: argocd-novault-plugin-helm
+    spec:
+      init:
+        command: [sh, -c]
+        args: ["helm dependency build"]
+      generate:
+        command: ["bash", "-c"]
+        args: ['helm template "$ARGOCD_APP_NAME" -n "$ARGOCD_APP_NAMESPACE" -f <(echo "$ARGOCD_ENV_HELM_VALUES") .']
+  sops-age-plugin.yaml: |
+    apiVersion: argoproj.io/v1alpha1
+    kind: ConfigManagementPlugin
+    metadata:
+      name: argocd-sops-age-plugin
+    spec:
+      generate:
+        command: ["sh", "-c"]
+        args: ['AVP_TYPE=sops argocd-vault-plugin generate ./']

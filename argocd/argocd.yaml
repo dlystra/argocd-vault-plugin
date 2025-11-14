@@ -1,0 +1,298 @@
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: argocd
+  namespace: openshift-gitops
+spec:
+  server:
+    autoscale:
+      enabled: false
+    grpc:
+      ingress:
+        enabled: false
+    ingress:
+      enabled: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 125m
+        memory: 128Mi
+    route:
+      enabled: true
+    service:
+      type: ''
+  grafana:
+    enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+  monitoring:
+    enabled: false
+  notifications:
+    enabled: false
+  prometheus:
+    enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+  initialSSHKnownHosts: {}
+  sso:
+    dex:
+      openShiftOAuth: true
+      resources:
+        limits:
+          cpu: 500m
+          memory: 256Mi
+        requests:
+          cpu: 250m
+          memory: 128Mi
+    provider: dex
+  rbac:
+    defaultPolicy: ''
+    policy: |
+      g, system:cluster-admins, role:admin
+    scopes: '[groups]'
+  repo:
+    resources:
+      limits:
+        cpu: '1'
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    initContainers:
+      - command:
+          - cp
+          - '-n'
+          - /usr/local/bin/argocd
+          - /var/run/argocd/argocd-cmp-server
+        image: 'quay.io/argoproj/argocd:v2.14.7'
+        imagePullPolicy: IfNotPresent
+        name: copy-cmp-server
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+    mountsatoken: true
+    serviceaccount: vault
+    sidecarContainers:
+      - command:
+          - /var/run/argocd/argocd-cmp-server
+        image: 'quay.io/eformat/argocd-vault-sidecar:2.14.7'
+        imagePullPolicy: Always
+        name: vault-plugin
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/config
+            name: vault-plugin
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: cmp-tmp-vault
+      - command:
+          - /var/run/argocd/argocd-cmp-server
+        image: 'quay.io/eformat/argocd-vault-sidecar:2.14.7'
+        imagePullPolicy: Always
+        name: vault-plugin-helm
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/config
+            name: vault-plugin-helm
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: cmp-tmp-helm
+      - command:
+          - /var/run/argocd/argocd-cmp-server
+        env:
+          - name: KUSTOMIZE_PLUGIN_HOME
+            value: /etc/kustomize/plugin
+        image: 'quay.io/eformat/argocd-vault-sidecar:2.14.7'
+        imagePullPolicy: Always
+        name: vault-plugin-kustomize
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/config
+            name: vault-plugin-kustomize
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: cmp-tmp-kustomize
+      - command:
+          - /var/run/argocd/argocd-cmp-server
+        env:
+          - name: KUSTOMIZE_PLUGIN_HOME
+            value: /etc/kustomize/plugin
+        image: 'quay.io/eformat/argocd-vault-sidecar:2.14.7'
+        imagePullPolicy: Always
+        name: vault-plugin-kustomize-novault
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/config
+            name: vault-plugin-kustomize-novault
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: cmp-tmp-kustomize
+      - command:
+          - /var/run/argocd/argocd-cmp-server
+        image: 'quay.io/eformat/argocd-vault-sidecar:2.14.7'
+        imagePullPolicy: Always
+        name: vault-plugin-helm-novault
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/config
+            name: vault-plugin-helm-novault
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: cmp-tmp-helm
+    volumes:
+      - configMap:
+          items:
+            - key: vault-plugin.yaml
+              mode: 509
+              path: plugin.yaml
+          name: argocd-vault-plugins
+        name: vault-plugin
+      - configMap:
+          items:
+            - key: helm-plugin.yaml
+              mode: 509
+              path: plugin.yaml
+          name: argocd-vault-plugins
+        name: vault-plugin-helm
+      - configMap:
+          items:
+            - key: kustomize-plugin.yaml
+              mode: 509
+              path: plugin.yaml
+          name: argocd-vault-plugins
+        name: vault-plugin-kustomize
+      - configMap:
+          items:
+            - key: kustomize-novault-plugin.yaml
+              mode: 509
+              path: plugin.yaml
+          name: argocd-vault-plugins
+        name: vault-plugin-kustomize-novault
+      - configMap:
+          items:
+            - key: helm-novault-plugin.yaml
+              mode: 509
+              path: plugin.yaml
+          name: argocd-vault-plugins
+        name: vault-plugin-helm-novault
+      - emptyDir: {}
+        name: cmp-tmp-vault
+      - emptyDir: {}
+        name: cmp-tmp-helm
+      - emptyDir: {}
+        name: cmp-tmp-kustomize
+  resourceExclusions: |
+    - apiGroups:
+        - tekton.dev
+      clusters:
+        - '*'
+      kinds:
+        - TaskRun
+        - PipelineRun
+  ha:
+    enabled: false
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
+  tls:
+    ca: {}
+  redis:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
+  controller:
+    processors: {}
+    resources:
+      limits:
+        cpu: '2'
+        memory: 2Gi
+      requests:
+        cpu: 250m
+        memory: 1Gi
+    sharding: {}
