@@ -1,2 +1,2 @@
-secretpath: secret/data/helm
+secretpath: secret/data/values
 secretkey: <demo>
