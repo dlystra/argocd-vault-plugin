@@ -4,6 +4,9 @@ metadata:
   name: avp-demo-kustomize
   namespace: openshift-gitops
 spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: avp-demo
   project: default
   source:
     repoURL: 'https://github.com/dlystra/argocd-vault-plugin.git'
@@ -11,9 +14,6 @@ spec:
     path: kustomize/overlays/demo
     plugin:
       name: argocd-vault-plugin-kustomize
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: openshift-gitops
   syncPolicy:
     automated:
       enabled: true
