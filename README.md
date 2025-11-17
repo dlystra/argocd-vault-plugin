@@ -13,7 +13,7 @@ argocd/2-rbac.yaml \
 argocd/3-vault-repo.yaml \
 argocd/4-avp-repo.yaml \
 argocd/5-vault-secret.yaml \
-argocd/6-argocd.yaml \
+argocd/6-argocd.yaml
 ```
 
 3. Create the Vault application and secrets:
