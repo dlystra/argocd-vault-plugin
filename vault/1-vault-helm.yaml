@@ -4,6 +4,14 @@ metadata:
   name: vault
   namespace: openshift-gitops
 spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jqPathExpressions:
+      - .webhooks[].clientConfig.caBundle
   project: default
   source:
     repoURL: https://helm.releases.hashicorp.com
@@ -21,9 +29,6 @@ spec:
         injector:
           image:
             repository: docker.io/hashicorp/vault-k8s
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: vault
   syncPolicy:
     automated:
       prune: true
