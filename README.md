@@ -7,13 +7,7 @@ oc apply -f openshift-gitops-operator/install.yaml
 
 2. Deploy Argo CD cluster and dependencies:
 ```
-oc apply -f \
-argocd/1-cm.yaml \
-argocd/2-rbac.yaml \
-argocd/3-vault-repo.yaml \
-argocd/4-avp-repo.yaml \
-argocd/5-vault-secret.yaml \
-argocd/6-argocd.yaml
+oc apply -f argocd
 ```
 
 3. Create the Vault application and secrets:
